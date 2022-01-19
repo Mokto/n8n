@@ -1209,8 +1209,11 @@ export class HttpRequest implements INodeType {
 			}
 		}
 
+		const startDate = new Date()
 		// @ts-ignore
 		const promisesResponses = await Promise.allSettled(requestPromises);
+		const endDate   = new Date();
+		const milliseconds = (endDate.getTime() - startDate.getTime());
 
 		let response: any; // tslint:disable-line:no-any
 		for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
@@ -1274,6 +1277,7 @@ export class HttpRequest implements INodeType {
 						}
 						returnItem[property] = response![property];
 					}
+					returnItem["responseTimeMs"] = milliseconds;
 
 					newItem.json = returnItem;
 
@@ -1298,12 +1302,10 @@ export class HttpRequest implements INodeType {
 
 						returnItem[property] = response![property];
 					}
-					returnItems.push({
-						json: returnItem,
-						pairedItem: {
-							item: itemIndex,
-						},
-					});
+					returnItem["responseTimeMs"] = milliseconds;
+					returnItems.push({ json: returnItem, pairedItem: {
+						item: itemIndex,
+					}});
 				} else {
 					returnItems.push({
 						json: {
@@ -1321,6 +1323,7 @@ export class HttpRequest implements INodeType {
 					for (const property of fullReponseProperties) {
 						returnItem[property] = response![property];
 					}
+					returnItem["responseTimeMs"] = milliseconds;
 
 					if (responseFormat === 'json' && typeof returnItem.body === 'string') {
 						try {
